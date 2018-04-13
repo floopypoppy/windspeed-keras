@@ -4,6 +4,40 @@
 pkl file data plotting
 
 """
+def covmap(ma,mb):
+    '''
+    compute the covariance-displacement graph between two input 2-D slope arrays
+    
+    Parameters
+    ------
+    ma, mb: 2-D slope map between which to compute the covariance-displacement graph
+    
+    outputs:
+        covmtx: 
+    '''    
+    l = np.shape(ma)[0]
+    covmtx = np.empty((2*l-1,2*l-1))
+    for delta_x in range(-l+1,l):
+        for delta_y in range(-l+1,l):
+            if delta_x<=0 and delta_y<=0:
+                slidea = ma[:l-abs(delta_x),:l-abs(delta_y)].flatten()
+                slideb = mb[abs(delta_x):,abs(delta_y):].flatten()
+            if delta_x<0 and delta_y>0:
+                slidea = ma[:l-abs(delta_x),delta_y:].flatten()
+                slideb = mb[abs(delta_x):,:l-delta_y].flatten()
+            if delta_x>0 and delta_y<0:
+                slidea = ma[delta_x:,:l-abs(delta_y)].flatten()
+                slideb = mb[:l-delta_x,abs(delta_y):].flatten()
+            if delta_x>=0 and delta_y>=0:
+                slidea = ma[delta_x:,delta_y:].flatten()
+                slideb = mb[:l-delta_x,:l-delta_y].flatten()
+            if size(slidea)>1:
+                temp = np.stack((slidea,slideb)) 
+                covmtx[l-1+delta_x,l-1+delta_y] = cov(temp)[0,1]
+            else :
+                covmtx[l-1+delta_x,l-1+delta_y] = 0               
+    return covmtx
+
 file_name = 'adam_30_400_100_32_0.2(hid)_henorm_0.2_0'
 pklfile = open('/users/xliu/dropbox/expout/hid/'+file_name+'.pkl','rb')
 data = pickle.load(pklfile)
